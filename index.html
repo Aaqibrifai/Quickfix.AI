@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <title>Quick-fix.AI</title>
+  <style>
+    
+    :root {
+      --bg-dark: #0d1117;
+      --text-dark: #c9d1d9;
+      --accent: #4fc3f7;
+    }
+
+    * {
+      box-sizing: border-box;
+      touch-action: manipulation;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+      font-family: 'Segoe UI', sans-serif;
+      background: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .topbar {
+      background: #21262d;
+      color: white;
+      padding: 15px;
+      font-size: 18px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 1001;
+      height: 60px;
+    }
+
+    .menu-btn {
+      position: absolute;
+      left: 15px;
+      font-size: 24px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      color: white;
+      display: none;
+    }
+
+    .container {
+      display: flex;
+      height: calc(100% - 60px);
+      position: relative;
+    }
+
+    .sidebar {
+      width: 240px;
+      background: #161b22;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      transition: transform 0.3s ease;
+    }
+
+    .sidebar button {
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      background-color: var(--accent);
+      color: #000;
+      cursor: pointer;
+    }
+
+    .sidebar button:hover {
+      background-color: #29b6f6;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+      position: relative;
+      background-color: var(--bg-dark);
+    }
+
+    .chat-container::before {
+      content: "";
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 500px;
+      height: 500px;
+      background-repeat: no-repeat;
+      background-size: contain;
+      opacity: 0.25;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      z-index: 1;
+    }
+
+    .msg {
+      display: inline-flex;
+      flex-direction: column;
+      max-width: 75%;
+      padding: 10px 14px;
+      margin: 6px 10px;
+      border-radius: 15px;
+      font-size: 15px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease;
+      word-wrap: break-word;
+      white-space: pre-wrap;
+    }
+
+    .user {
+      align-self: flex-end;
+      background: var(--accent);
+      color: #000;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background: #2e2e2e;
+      color: white;
+      border-bottom-left-radius: 0;
+    }
+
+    .msg span {
+      font-size: 12px;
+      opacity: 0.6;
+      align-self: flex-end;
+      margin-top: 4px;
+    }
+
+    .input-area {
+      display: flex;
+      padding: 10px;
+      background: #161b22;
+      border-top: 1px solid #30363d;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      outline: none;
+      border-radius: 5px;
+      margin-right: 10px;
+    }
+
+    .input-area button {
+      padding: 10px 14px;
+      border: none;
+      border-radius: 5px;
+      background: var(--accent);
+      color: #000;
+      cursor: pointer;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .msg:active {
+      transform: none !important;
+      scale: 1 !important;
+      transition: none !important;
+    }
+
+    .overlay {
+      display: none;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        height: calc(100vh - 60px);
+        width: 240px;
+        transform: translateX(-100%);
+        z-index: 1000;
+        background: #161b22;
+      }
+
+      .sidebar.show {
+        transform: translateX(0);
+      }
+
+      .menu-btn {
+        display: block;
+      }
+
+      .overlay {
+        display: none;
+        position: fixed;
+        top: 60px;
+        left: 0;
+        width: 100%;
+        height: calc(100vh - 60px);
+        background: rgba(0, 0, 0, 0.4);
+        z-index: 999;
+      }
+
+      .overlay.show {
+        display: block;
+      }
+    }
+
+    body.light-theme {
+      --bg-dark: #f0f0f0;
+      --text-dark: #000000;
+      --accent: #4fc3f7;
+    }
+
+    body.light-theme .topbar {
+      background: #21262d;
+      color: #f0f0f0;
+    }
+
+    body.light-theme .sidebar {
+      background: #21262d;
+    }
+
+    body.light-theme .bot {
+      background: #e0e0e0;
+      color: #000;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+    Quick-fix.AI
+  </div>
+
+  <div class="overlay" id="overlay" onclick="toggleSidebar()"></div>
+
+  <div class="container">
+    <div class="sidebar" id="sidebar">
+      <button onclick="newChat()">+ New Chat</button>
+      <button onclick="exportChat()">Export</button>
+      <button onclick="saveChat()">Save</button>
+      <button onclick="toggleTheme()">Toggle Theme</button>
+      <button onclick="location.href='/profile'">Profile</button>
+    </div>
+
+    <div class="chat-container">
+      <div class="chat-box" id="chatLog"></div>
+      <div class="input-area">
+        <input type="file" id="imageInput" style="display:none" accept="image/*" onchange="handleImageUpload(event)"/>
+        <button onclick="document.getElementById('imageInput').click()">📷</button>
+        <button onclick="startListening()">🎙️</button>
+        <input type="text" id="userInput" placeholder="Type your message... 😊" onkeypress="handleKey(event)" />
+        <button onclick="sendMessage()">Send</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let darkMode = true;
+    let messages = [];
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const overlay = document.getElementById("overlay");
+      sidebar.classList.toggle("show");
+      overlay.classList.toggle("show");
+    }
+
+    function appendMessage(sender, text, type, timestamp = new Date()) {
+      const chatBox = document.getElementById("chatLog");
+      const msgDiv = document.createElement("div");
+      msgDiv.classList.add("msg", type);
+      msgDiv.innerHTML = `<div>${text}</div><span>${timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage() {
+      const input = document.getElementById("userInput");
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      appendMessage("You", msg, "user");
+      messages.push({ role: "user", content: msg });
+      input.value = "";
+
+      const chatBox = document.getElementById("chatLog");
+      const typingDiv = document.createElement("div");
+      typingDiv.classList.add("msg", "bot");
+      typingDiv.setAttribute("id", "typing");
+      typingDiv.innerHTML = `<div><i>Quick-fix.AI is typing...</i></div>`;
+      chatBox.appendChild(typingDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      fetch("/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ messages })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById("typing")?.remove();
+        const reply = data.reply;
+        appendMessage("Quick-fix.AI", reply, "bot");
+        messages.push({ role: "assistant", content: reply });
+      })
+      .catch(() => {
+        document.getElementById("typing")?.remove();
+        appendMessage("Quick-fix.AI", "❌ Error getting response", "bot");
+      });
+    }
+
+    function handleKey(e) {
+      if (e.key === "Enter") sendMessage();
+    }
+
+    function toggleTheme() {
+      darkMode = !darkMode;
+      document.body.classList.toggle("light-theme", !darkMode);
+    }
+
+    function newChat() {
+      document.getElementById("chatLog").innerHTML = "";
+      messages = [];
+    }
+
+    function saveChat() {
+      const messagesText = Array.from(document.querySelectorAll(".msg")).map(m => m.innerText);
+      localStorage.setItem("chat_history", JSON.stringify(messagesText));
+      alert("Chat saved to local storage.");
+    }
+
+    function exportChat() {
+      const chatText = Array.from(document.querySelectorAll(".msg")).map(m => m.innerText).join("\n\n");
+      const blob = new Blob([chatText], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "Quick-fix.txt";
+      link.click();
+    }
+
+    function startListening() {
+      if (!('webkitSpeechRecognition' in window)) {
+        alert("Sorry, your browser doesn't support speech recognition.");
+        return;
+      }
+
+      const recognition = new webkitSpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+      recognition.lang = 'en-IN';
+
+      recognition.onstart = () => {
+        console.log("Voice recognition started...");
+      };
+
+      recognition.onresult = (event) => {
+        const transcript = event.results[0][0].transcript;
+        document.getElementById("userInput").value = transcript;
+        sendMessage();
+      };
+
+      recognition.onerror = (event) => {
+        console.error("Voice recognition error:", event.error);
+      };
+
+      recognition.start();
+    }
+
+    function handleImageUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const imgTag = `<img src="${e.target.result}" style="max-width: 200px; border-radius: 10px;" />`;
+        appendMessage("You", imgTag, "user");
+        messages.push({ role: "user", content: "[Image sent]" });
+      };
+      reader.readAsDataURL(file);
+    }
+  </script>
+</body>
+</html>

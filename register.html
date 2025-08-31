@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>RifaiBot - Register</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            background: black;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .background-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 150px;
+            color: rgba(255, 255, 255, 0.05);
+            font-weight: bold;
+            pointer-events: none;
+            user-select: none;
+            white-space: nowrap;
+            z-index: 1;
+            animation: pulse 6s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+        }
+
+        .form-container {
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px;
+            border-radius: 16px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.1);
+            width: 100%;
+            max-width: 400px;
+            color: white;
+            opacity: 0;
+            transform: translateY(30px);
+            animation: fadeSlide 1s ease-out forwards;
+        }
+
+        @keyframes fadeSlide {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: none;
+            border-radius: 8px;
+            background: #161b22;
+            color: white;
+            font-size: 16px;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .toggle-password {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            cursor: pointer;
+            color: #ccc;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #4fc3f7;
+            color: black;
+            font-weight: bold;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #29b6f6;
+        }
+
+        .link {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .link a {
+            color: #4fc3f7;
+            text-decoration: none;
+        }
+
+        .error {
+            color: #f44336;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 14px;
+        }
+
+        @media (max-width: 480px) {
+            .background-text {
+                font-size: 60px;
+            }
+
+            .form-container {
+                padding: 25px;
+                margin: 10px;
+                max-width: 90%;
+            }
+
+            input[type="text"], input[type="password"], button {
+                font-size: 14px;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-text">Quick-fix.AI</div>
+    <div class="form-container">
+        <h2>Register</h2>
+        {% if error %}<div class="error">{{ error }}</div>{% endif %}
+        <form method="POST" onsubmit="return validateForm()">
+            <input type="text" name="username" id="username" placeholder="Enter your email" required>
+            <div class="password-wrapper">
+                <input type="password" name="password" id="password" placeholder="Enter password" required>
+                <span class="toggle-password" onclick="togglePassword()">👁️</span>
+            </div>
+            <button type="submit">Register</button>
+        </form>
+        <div class="link">Already have an account? <a href="/login">Login</a></div>
+    </div>
+
+    <script>
+        function togglePassword() {
+            const pwd = document.getElementById("password");
+            pwd.type = pwd.type === "password" ? "text" : "password";
+        }
+
+        function validateForm() {
+            const username = document.getElementById("username").value.trim();
+            const password = document.getElementById("password").value.trim();
+
+            const emailRegex = /^[^\s@]+@gmail\.com$/;
+            const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+
+            if (!emailRegex.test(username)) {
+                alert("Only @gmail.com email is allowed.");
+                return false;
+            }
+
+            if (!strongPassword.test(password)) {
+                alert("Password must be at least 8 characters and include uppercase, lowercase and a number.");
+                return false;
+            }
+
+            return true;
+        }
+    </script>
+</body>
+</html>
